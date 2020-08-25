@@ -1,13 +1,7 @@
 import sqlite3
-from collections import UserDict
 from datetime import date, datetime
 
-from .utils import tuple_to_query
-
-
-class ConverterDict(UserDict):
-    def __missing__(self, key):
-        return key
+from .utils import tuple_to_query, ConverterDict
 
 
 class SQLiteDb:
@@ -30,7 +24,8 @@ class SQLiteDb:
 
     def create_table(self, name, description):
         cols_txt = ', '.join(f'{field} {kind[1]}' for field, kind in description['cols'].items())
-        fks_txt = ', '.join(f'FOREIGN KEY ({field}) REFERENCES {table}(id)' for field, table in description['fks'].items())
+        single_fk_str = 'FOREIGN KEY ({}) REFERENCES {}(id)'
+        fks_txt = ', '.join(single_fk_str.format(field, table) for field, table in description['fks'].items())
         table_txt = ', '.join(item for item in [cols_txt, fks_txt] if item)
         query = f'''CREATE TABLE IF NOT EXISTS {name}({table_txt});'''
         self.db.execute(query)
@@ -53,8 +48,13 @@ class SQLiteDb:
         self.db.execute(f'DELETE FROM {table} WHERE id=?;', (pk, ))
         self.db.commit()
 
-    def select(self, table, cols='*', **where):
-        where_str = ','.join(f'{key}=?' for key in where)
-        items = self.db.execute(f'SELECT {cols} FROM {table}{f" WHERE {where_str}" if where_str else ""};', tuple(where.values()))
+    def select(self, table, **where):
+        where_str = ' AND '.join(f'{key}=?' for key in where)
+        where_clause = f" WHERE {where_str}" if where_str else ""
+        query = f'SELECT * FROM {table}{where_clause};'
+        items = self.db.execute(query, tuple(where.values()))
         self.db.commit()
         return items
+    
+    def execute_raw(self, sql):
+        return self.db.execute(sql)

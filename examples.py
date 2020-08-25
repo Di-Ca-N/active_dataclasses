@@ -1,7 +1,7 @@
 from datetime import datetime
-from data_orm.models import Model
+from active_dataclasses.models import persistent_dataclass
 
-@Model.register
+@persistent_dataclass
 class Address:
     street: str
     number: int
@@ -10,7 +10,7 @@ class Address:
         return Person.manager.get(address=self.id)
 
 
-@Model.register
+@persistent_dataclass
 class Person:
     name: str
     age: int
@@ -26,7 +26,7 @@ class Person:
 
 
 address = Address('Foo St.', 50).save()
-person = Person('John Doe', 30, address.id, datetime(2001, 11, 27, 0, 0, 0)).save()
+person = Person('John Doe', 30, address.id, datetime(2001, 11, 27, 0, 0, 0), True).save()
 print(person)
 print(person.get_address())
 print(person.get_address().get_person())
