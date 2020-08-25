@@ -65,7 +65,7 @@ If these column types doesn't fit your needs, you can choose another one of the 
 
 ## Limitations
 
-- Due to use of dataclasses, their limitations will be applied to your models too. One example is that you cannot define fields with default values after required fields.
+- Due to use of dataclasses, their limitations will be applied to your models too. One example is that you cannot define required fields after fields with default values.
 - Only equality comparisons can be used on filters at this moment. (Work in Progress!)
 
 ## Testing
